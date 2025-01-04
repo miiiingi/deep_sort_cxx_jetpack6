@@ -17,7 +17,7 @@ https://github.com/RichardoMrMu/deepsort-tensorrt.git
 이 레포지토리에서 deepsort 모델의 가중치를 가져올 것입니다.
 ```
 git clone git@github.com:ZQPei/deep_sort_pytorch.git
-git clone git@github.com:miiiingi/deepsort-tensorrt-JetPack6.git
+git clone git@github.com:miiiingi/deep_sort_cxx_jetpack6.git
 ```
 먼저, 본 레포지토리의 exportOnnx.py 파일을 복사하여 클론한 deep_sort_pytorch 레포지토리에 복사합니다.   
 deep_sort_pytorch 레포지토리에서 exportOnnx.py을 실행하여 deepsort.onnx 파일을 얻습니다.  
