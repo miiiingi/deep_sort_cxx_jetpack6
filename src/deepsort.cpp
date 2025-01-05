@@ -1,4 +1,5 @@
 #include "deepsort.h"
+#include "datatype.h"
 
 DeepSort::DeepSort(std::string modelPath, int batchSize, int featureDim, int gpuID, ILogger* gLogger) {
     this->gpuID = gpuID;

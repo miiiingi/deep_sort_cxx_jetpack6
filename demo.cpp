@@ -98,13 +98,35 @@ public:
 
         cv::Mat frame;
         int frameIndex = 1;
+        vector<DetectBox> det;
         while (cap.read(frame)) {
+            det.clear();
             if (frameIndex >= allDetections.size()) break;
             cv::Mat temp = frame.clone();
             cv::cvtColor(frame, temp, cv::COLOR_BGR2RGB);
             vector<DetectBox> d = allDetections[frameIndex];
-            // DS->sort(temp, d);
-            showDetection(frame, d);
+            std::cout << "allDetection size: " << d.size() << "\n";
+            DS->sort(temp, d);
+            std::cout << "result size: " << DS->result.size() << "\n";
+            std::cout << "results: " << DS->results.size() << "\n";
+            for (int i = 0; i < DS->result.size(); i++)
+            {
+                int x1 = DS->result[i].second(0,0);
+                int y1 = DS->result[i].second(0,1);
+                int x2 = DS->result[i].second(0,2);
+                int y2 = DS->result[i].second(0,3);
+                int trackId = DS->result[i].first;
+                int cls = DS->results[i].first.cls;
+                float conf = DS->results[i].first.conf;
+                DetectBox box(x1, y1, x2, y2, conf, cls, trackId);
+                det.push_back(box);
+            }
+            showDetection(frame, det);
+            // if (frameIndex >= 1)
+            // {
+            //     break;
+            // }
+            
             frameIndex++;
         }
         cap.release();
@@ -119,7 +141,7 @@ private:
 };
 
 int main(int argc, char** argv) {
-    if (argc < 3) {
+    if (argc < 4) {
         std::cout << "./demo [input model path] [input txt path] [input video path]" << std::endl;
         return -1;
     }
