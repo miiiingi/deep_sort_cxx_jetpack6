@@ -1,6 +1,17 @@
 #ifndef DATATYPE_H
 #define DATATYPE_H
 
+/**
+ * @brief DetectBox 생성자
+ * 
+ * @param x1 바운딩 박스의 왼쪽 상단 x 좌표 (기본값: 0)
+ * @param y1 바운딩 박스의 왼쪽 상단 y 좌표 (기본값: 0)
+ * @param x2 바운딩 박스의 오른쪽 하단 x 좌표 (기본값: 0)
+ * @param y2 바운딩 박스의 오른쪽 하단 y 좌표 (기본값: 0)
+ * @param confidence 탐지 신뢰도 (기본값: 0)
+ * @param classID 클래스 ID (기본값: -1)
+ * @param trackID 트랙 ID (기본값: -1)
+ */
 typedef struct DetectBox {
     DetectBox(float x1=0, float y1=0, float x2=0, float y2=0, 
             float confidence=0, float classID=-1, float trackID=-1) {

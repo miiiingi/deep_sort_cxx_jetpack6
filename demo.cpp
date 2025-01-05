@@ -22,7 +22,7 @@ void showDetection(cv::Mat& img, std::vector<DetectBox>& boxes) {
         std::string lbl = cv::format("ID:%d_C:%d_CONF:%.2f", (int)box.trackID, (int)box.classID, box.confidence);
         cv::putText(temp, lbl, lt, cv::FONT_HERSHEY_COMPLEX, 0.8, cv::Scalar(0,255,0));
     }
-    cv::imshow("img", temp);
+    cv::imshow("DeepSort", temp);
     if (cv::waitKey(1) == 'q') {
         return;
     }
@@ -30,13 +30,15 @@ void showDetection(cv::Mat& img, std::vector<DetectBox>& boxes) {
 
 class Tester {
 public:
-    Tester(string modelPath) {
+    Tester(std::string modelPath) {
         allDetections.clear();
         out.clear();
         DS = new DeepSort(modelPath, 128, 256, 0, &gLogger);
-        cout << "DeepSort initialized!" << "\n";
+        std::cout << "DeepSort initialized!" << "\n";
     }
     ~Tester() {
+        delete DS;
+        std::cout << "DeepSort released!" << "\n";
     }
 
 public:
@@ -46,11 +48,11 @@ public:
         auto string_find_first_not = [s, delim](size_t pos = 0) -> size_t {
             for (size_t i = pos; i < s.size(); ++i)
                 if (s[i] != delim) return i;
-            return string::npos;
+            return std::string::npos;
         };
         size_t lastPos = string_find_first_not(0);
         size_t pos = s.find(delim, lastPos);
-        while (lastPos != string::npos) {
+        while (lastPos != std::string::npos) {
             token.emplace_back(s.substr(lastPos, pos-lastPos));
             lastPos = string_find_first_not(pos);
             pos = s.find(delim, lastPos);
@@ -58,23 +60,21 @@ public:
     }
 
     void loadDetections(std::string txtPath) {
-        //fstream f(filePath, ios::in);
         this->txtPath = txtPath;
-        cout << "Loading detections from " << txtPath << "\n";
-        ifstream inFile;
-        inFile.open(txtPath, ios::binary);
+        std::cout << "Loading detections from " << txtPath << "\n";
+        std::ifstream inFile;
+        inFile.open(txtPath, std::ios::binary);
         std::string temp;
         vector<std::string> token;
-        while (getline(inFile, temp)) {
-            // std::cout << temp << std::endl;
+        while (std::getline(inFile, temp)) {
             split(temp, token, ' ');
-            int frame = atoi(token[0].c_str());
-            int c     = atoi(token[1].c_str());
-            int x     = atoi(token[2].c_str());
-            int y     = atoi(token[3].c_str());
-            int w     = atoi(token[4].c_str());
-            int h     = atoi(token[5].c_str());
-            float con= atof(token[6].c_str());     
+            int frame = std::atoi(token[0].c_str());
+            int c     = std::atoi(token[1].c_str());
+            int x     = std::atoi(token[2].c_str());
+            int y     = std::atoi(token[3].c_str());
+            int w     = std::atoi(token[4].c_str());
+            int h     = std::atoi(token[5].c_str());
+            float con = std::atof(token[6].c_str());     
             while (allDetections.size() <= frame) {
                 vector<DetectBox> t;
                 allDetections.push_back(t);
@@ -83,32 +83,51 @@ public:
             allDetections[frame].push_back(dd);
         }
         allDetections.pop_back();
-        cout << "Loading detections complete! \n";
+        std::cout << "Loading detections complete! \n";
     }
 
     void run(std::string videoPath) {
-        cv::namedWindow("DeepSortTest");
-        cout << "Running DeepSort on " << videoPath << "\n";
+        std::cout << "Running DeepSort on " << videoPath << "\n";
         cv::VideoCapture cap(videoPath); // Open the video file
         if (!cap.isOpened()) {
             std::cerr << "Error opening video file" << std::endl;
             return;
-        } else
-        {
+        } else {
             std::cout << "Video file opened successfully" << std::endl;
         }
 
         cv::Mat frame;
         int frameIndex = 1;
+        vector<DetectBox> det;
         while (cap.read(frame)) {
+            det.clear();
             if (frameIndex >= allDetections.size()) break;
             cv::Mat temp = frame.clone();
             cv::cvtColor(frame, temp, cv::COLOR_BGR2RGB);
             vector<DetectBox> d = allDetections[frameIndex];
+            std::cout << "allDetection size: " << d.size() << "\n";
             DS->sort(temp, d);
-            showDetection(frame, d);
+            std::cout << "result size: " << DS->result.size() << "\n";
+            std::cout << "results: " << DS->results.size() << "\n";
+            for (int i = 0; i < DS->result.size(); i++)
+            {
+                int x1 = DS->result[i].second(0,0);
+                int y1 = DS->result[i].second(0,1);
+                int x2 = DS->result[i].second(0,2);
+                int y2 = DS->result[i].second(0,3);
+                int trackId = DS->result[i].first;
+                int cls = DS->results[i].first.cls;
+                float conf = DS->results[i].first.conf;
+                DetectBox box(x1, y1, x2, y2, conf, cls, trackId);
+                det.push_back(box);
+            }
+            showDetection(frame, det);
+            // if (frameIndex >= 1)
+            // {
+            //     break;
+            // }
+            
             frameIndex++;
-
         }
         cap.release();
         cv::destroyAllWindows();
@@ -122,11 +141,13 @@ private:
 };
 
 int main(int argc, char** argv) {
-    if (argc < 3) {
-        std::cout << "./demo [input model path] [input txt path]" << std::endl;
+    if (argc < 4) {
+        std::cout << "./demo [input model path] [input txt path] [input video path]" << std::endl;
         return -1;
     }
     Tester* test = new Tester(argv[1]);
     test->loadDetections(argv[2]);
     test->run(argv[3]);
+    delete test;
+    return 0;
 }

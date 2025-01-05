@@ -18,6 +18,8 @@ public:
 
 public:
     void sort(cv::Mat& frame, vector<DetectBox>& dets);
+    vector<RESULT_DATA> result;
+    vector<std::pair<CLSCONF, DETECTBOX>> results;
 
 private:
     void sort(cv::Mat& frame, DETECTIONS& detections);
@@ -37,8 +39,6 @@ private:
     float maxCosineDist;
 
 private:
-    vector<RESULT_DATA> result;
-    vector<std::pair<CLSCONF, DETECTBOX>> results;
     tracker* objTracker;
     FeatureTensor* featureExtractor;
     ILogger* gLogger;
