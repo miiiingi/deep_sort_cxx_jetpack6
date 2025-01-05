@@ -33,6 +33,9 @@ void DeepSort::sort(cv::Mat& frame, vector<DetectBox>& dets) {
     
     for (DetectBox i : dets) {
         DETECTBOX box(i.x1, i.y1, i.x2-i.x1, i.y2-i.y1);
+        /**
+         * @brief d라는 객체에는 box(tlwh), confidence를 저장
+         */
         DETECTION_ROW d;
         d.tlwh = box;
         d.confidence = i.confidence;
@@ -42,6 +45,9 @@ void DeepSort::sort(cv::Mat& frame, vector<DetectBox>& dets) {
     result.clear();
     results.clear();
     if (detections.size() > 0) {
+        /**
+         * @brief DETECTIONV2라는 객체에는 clsConf와 detections를 저장
+         */
         DETECTIONSV2 detectionsv2 = make_pair(clsConf, detections);
         sort(frame, detectionsv2);
     }
