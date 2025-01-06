@@ -25,7 +25,6 @@ void signalHandler(int signum) {
 class Tester {
 public:
     Tester(std::string modelPath, std::string yoloPath) {
-        allDetections.clear();
         out.clear();
         DS = new DeepSort(modelPath, 128, 256, 0, &gLogger);
         std::cout << "DeepSort initialized!" << "\n";
@@ -54,33 +53,6 @@ public:
             lastPos = string_find_first_not(pos);
             pos = s.find(delim, lastPos);
         }
-    }
-
-    void loadDetections(std::string txtPath) {
-        this->txtPath = txtPath;
-        std::cout << "Loading detections from " << txtPath << "\n";
-        std::ifstream inFile;
-        inFile.open(txtPath, std::ios::binary);
-        std::string temp;
-        vector<std::string> token;
-        while (std::getline(inFile, temp)) {
-            split(temp, token, ' ');
-            int frame = std::atoi(token[0].c_str());
-            int c     = std::atoi(token[1].c_str());
-            int x     = std::atoi(token[2].c_str());
-            int y     = std::atoi(token[3].c_str());
-            int w     = std::atoi(token[4].c_str());
-            int h     = std::atoi(token[5].c_str());
-            float con = std::atof(token[6].c_str());     
-            while (allDetections.size() <= frame) {
-                vector<DetectBox> t;
-                allDetections.push_back(t);
-            }
-            DetectBox dd(x-w/2, y-h/2, x+w/2, y+h/2, con, c);
-            allDetections[frame].push_back(dd);
-        }
-        allDetections.pop_back();
-        std::cout << "Loading detections complete! \n";
     }
 
     void run(std::string videoPath) {
@@ -244,7 +216,6 @@ public:
     }
 
 private:
-    vector<vector<DetectBox>> allDetections;
     vector<DetectBox> out;
     std::string txtPath;
     DeepSort* DS;
@@ -253,13 +224,12 @@ private:
 
 int main(int argc, char** argv) {
     signal(SIGINT, signalHandler);
-    if (argc < 5) {
-        std::cout << "./demo [input model path] [input txt path] [input video path] [yolo model path]" << std::endl;
+    if (argc < 4) {
+        std::cout << "./demo [input model path] [input video path] [yolo model path]" << std::endl;
         return -1;
     }
-    Tester* test = new Tester(argv[1], argv[4]);
-    test->loadDetections(argv[2]);
-    test->run(argv[3]);
+    Tester* test = new Tester(argv[1], argv[3]);
+    test->run(argv[2]);
     // test->runInf(argv[3]);
     delete test;
     return 0;
