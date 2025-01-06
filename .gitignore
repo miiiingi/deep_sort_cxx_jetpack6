@@ -1,5 +1,4 @@
 .vscode
 build
-resources/*.mp4
 resources/*.onnx
 resources/*.engine
