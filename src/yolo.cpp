@@ -196,5 +196,6 @@ cv::Mat Yolo::formatToSquare(const cv::Mat &source)
     int _max = MAX(col, row);
     cv::Mat result = cv::Mat::zeros(_max, _max, CV_8UC3);
     source.copyTo(result(cv::Rect(0, 0, col, row)));
+    cv::imwrite("square.jpg", result);
     return result;
 }

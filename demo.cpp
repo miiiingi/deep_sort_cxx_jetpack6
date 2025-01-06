@@ -37,7 +37,7 @@ public:
         out.clear();
         DS = new DeepSort(modelPath, 128, 256, 0, &gLogger);
         std::cout << "DeepSort initialized!" << "\n";
-        yolo = new Yolo(yoloPath, cv::Size(1088, 1920), "classes.txt", true);
+        yolo = new Yolo(yoloPath, cv::Size(1920, 1088), "classes.txt", true);
         std::cout << "Yolo initialized!" << "\n";
     }
     ~Tester() {
@@ -138,15 +138,19 @@ public:
         cv::destroyAllWindows();
     }
 
-    void runInf() {
-        std::vector<std::string> imageNames;
-        imageNames.push_back("../resources/bus.jpg");
-        imageNames.push_back("../resources/zidane.jpg");
-        for (int i = 0; i < imageNames.size(); ++i)
-        {
-            cv::Mat frame = cv::imread(imageNames[i]);
+    void runInf(std::string videoPath) {
+        std::cout << "Running DeepSort on " << videoPath << "\n";
+        cv::VideoCapture cap(videoPath); // Open the video file
+        if (!cap.isOpened()) {
+            std::cerr << "Error opening video file" << std::endl;
+            return;
+        } else {
+            std::cout << "Video file opened successfully" << std::endl;
+        }
 
-            // Inference starts here...
+        cv::Mat frame;
+        int frameIndex = 1;
+        while (cap.read(frame)) {
             std::vector<Detection> output = yolo->runYolo(frame);
 
             int detections = output.size();
@@ -177,9 +181,11 @@ public:
             cv::resize(frame, frame, cv::Size(frame.cols*scale, frame.rows*scale));
             cv::imshow("Inference", frame);
 
-            cv::waitKey(-1);
+            if (cv::waitKey(1) && 0xFF == 'q'){
+                break;
+            }
         }
-        
+            
 
     }
 
@@ -199,7 +205,7 @@ int main(int argc, char** argv) {
     Tester* test = new Tester(argv[1], argv[4]);
     test->loadDetections(argv[2]);
     // test->run(argv[3]);
-    test->runInf();
+    test->runInf(argv[3]);
     delete test;
     return 0;
 }
