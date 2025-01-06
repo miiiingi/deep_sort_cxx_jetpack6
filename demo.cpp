@@ -119,11 +119,6 @@ public:
                 outBoxes.push_back(outBox);
             }
             showDetection(frame, outBoxes, colors, classNames);
-            // if (frameIndex >= 1)
-            // {
-            //     break;
-            // }
-            
             frameIndex++;
         }
         cap.release();
@@ -195,8 +190,6 @@ public:
                 cv::rectangle(frame, lt, br, colors[i], 2);
             }
 
-
-            // std::string lbl = cv::format("ID:%d_C:%s_CONF:%.2f", (int)box.trackID, classNames[i], box.conf);
             std::string lbl = classNames[i] + ' ' + std::to_string(box.confidence).substr(0, 4);
             cv::Size textSize = cv::getTextSize(lbl, cv::FONT_HERSHEY_DUPLEX, 1, 2, 0);
             cv::Rect textBox(lt.x, lt.y - 40, textSize.width + 10, textSize.height + 20);
