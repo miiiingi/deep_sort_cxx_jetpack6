@@ -110,7 +110,6 @@ public:
             std::vector<Detection> output = yolo->runYolo(frame);
 
             int detections = output.size();
-            // std::cout << "Number of detections:" << detections << std::endl;
 
             for (int i = 0; i < detections; ++i)
             {
@@ -132,11 +131,6 @@ public:
                 DetectBox inBox(x1, y1, x2, y2, conf, cls);
                 inBoxes.push_back(inBox);
             }
-            // if (frameIndex >= allDetections.size()) break;
-            // cv::Mat temp = frame.clone();
-            // // cv::cvtColor(frame, temp, cv::COLOR_BGR2RGB);
-            // vector<DetectBox> d = allDetections[frameIndex];
-            // std::cout << "allDetection size: " << d.size() << "\n";
             DS->sort(frame, inBoxes);
             std::cout << "result size: " << DS->result.size() << "\n";
             std::cout << "results: " << DS->results.size() << "\n";
