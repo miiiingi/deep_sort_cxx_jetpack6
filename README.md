@@ -25,11 +25,19 @@ deep_sort_pytorch 레포지토리에서 exportOnnx.py을 실행하여 deepsort.o
 ```
 mkdir build
 cd build
-cmake ..
-make
-./onnx2engine ../resources/deepsort.onnx ../resources/deepsort.engine
+bash ../build.sh
 ```
-아래의 코드로 데모를 실행할 수 있습니다. 본 데모는 검은 바탕위에 객체 추적 결과의 바운딩 박스가 표현됩니다.
+객체 탐지 모델의 사용을 위해 ultralytics 라이브러리를 사용합니다. 먼저 아래의 명령어를 통해 ultralytics 라이브러리를 다운로드 받습니다.
 ```
-./demo ../resources/deepsort.engine ../resources/track.txt
+pip install ultralytics
+```
+아래의 명령어를 통해서 yolov8s.onnx 파일을 생성합니다.
+```
+yolo export model=yolov8s.pt imgsz=1080,1920 format=onnx
+```
+생성된 yolov8s.onnx 파일을 resources 폴더에 옮깁니다.
+아래의 bash shell을 통해서 demo를 실행시킵니다.
+
+```
+bash ../run.sh
 ```
