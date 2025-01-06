@@ -12,24 +12,6 @@ using std::vector;
 static Logger gLogger;
 static Logger gLogger2;
 
-void showDetection(cv::Mat& img, std::vector<DetectBox>& boxes) {
-    cv::Mat temp = img.clone();
-    for (auto box : boxes) {
-        // cout << "box: " << box.x1 << " " << box.y1 << " " << box.x2 << " " << box.y2 << " " << box.confidence << " " << box.classID << "\n";
-        cv::Point lt(box.x1, box.y1);
-        cv::Point br(box.x2, box.y2);
-        if (lt.x >= 0 && lt.y >= 0 && br.x <= img.cols && br.y <= img.rows) {
-            cv::rectangle(temp, lt, br, cv::Scalar(255, 0, 0), 1);
-        }
-        std::string lbl = cv::format("ID:%d_C:%d_CONF:%.2f", (int)box.trackID, (int)box.classID, box.confidence);
-        cv::putText(temp, lbl, lt, cv::FONT_HERSHEY_COMPLEX, 0.8, cv::Scalar(0,255,0));
-    }
-    cv::imshow("DeepSort", temp);
-    if (cv::waitKey(1) == 'q') {
-        return;
-    }
-}
-
 class Tester {
 public:
     Tester(std::string modelPath, std::string yoloPath) {
@@ -103,15 +85,45 @@ public:
 
         cv::Mat frame;
         int frameIndex = 1;
-        vector<DetectBox> det;
+        vector<DetectBox> inBoxes;
+        vector<DetectBox> outBoxes;
+        vector<cv::Scalar> colors;
+        vector<std::string> classNames;
         while (cap.read(frame)) {
-            det.clear();
-            if (frameIndex >= allDetections.size()) break;
-            cv::Mat temp = frame.clone();
-            cv::cvtColor(frame, temp, cv::COLOR_BGR2RGB);
-            vector<DetectBox> d = allDetections[frameIndex];
-            std::cout << "allDetection size: " << d.size() << "\n";
-            DS->sort(temp, d);
+            inBoxes.clear();
+            outBoxes.clear();
+            colors.clear();
+            std::vector<Detection> output = yolo->runYolo(frame);
+
+            int detections = output.size();
+            // std::cout << "Number of detections:" << detections << std::endl;
+
+            for (int i = 0; i < detections; ++i)
+            {
+                Detection detection = output[i];
+
+                cv::Rect box = detection.box;
+                cv::Scalar color = detection.color;
+                colors.push_back(color);
+                classNames.push_back(detection.className);
+
+                int x1 = box.x;
+                int y1 = box.y;
+                int w = box.width;
+                int h = box.height;
+                int x2 = x1 + w;
+                int y2 = y1 + h;
+                int cls = detection.class_id;
+                float conf = detection.confidence;
+                DetectBox inBox(x1, y1, x2, y2, conf, cls);
+                inBoxes.push_back(inBox);
+            }
+            // if (frameIndex >= allDetections.size()) break;
+            // cv::Mat temp = frame.clone();
+            // // cv::cvtColor(frame, temp, cv::COLOR_BGR2RGB);
+            // vector<DetectBox> d = allDetections[frameIndex];
+            // std::cout << "allDetection size: " << d.size() << "\n";
+            DS->sort(frame, inBoxes);
             std::cout << "result size: " << DS->result.size() << "\n";
             std::cout << "results: " << DS->results.size() << "\n";
             for (int i = 0; i < DS->result.size(); i++)
@@ -123,10 +135,10 @@ public:
                 int trackId = DS->result[i].first;
                 int cls = DS->results[i].first.cls;
                 float conf = DS->results[i].first.conf;
-                DetectBox box(x1, y1, x2, y2, conf, cls, trackId);
-                det.push_back(box);
+                DetectBox outBox(x1, y1, x2, y2, conf, cls, trackId);
+                outBoxes.push_back(outBox);
             }
-            showDetection(frame, det);
+            showDetection(frame, outBoxes, colors, classNames);
             // if (frameIndex >= 1)
             // {
             //     break;
@@ -185,8 +197,36 @@ public:
                 break;
             }
         }
-            
+    }
 
+    void showDetection(cv::Mat& img, std::vector<DetectBox>& boxes, std::vector<cv::Scalar>& colors, std::vector<std::string>& classNames) {
+        cv::Mat frame = img.clone();
+        for (int i = 0; i < boxes.size(); i++) {
+            // cout << "box: " << box.x1 << " " << box.y1 << " " << box.x2 << " " << box.y2 << " " << box.confidence << " " << box.classID << "\n";
+            DetectBox box = boxes[i];
+            cv::Point lt(box.x1, box.y1);
+            cv::Point br(box.x2, box.y2);
+            if (lt.x >= 0 && lt.y >= 0 && br.x <= img.cols && br.y <= img.rows) {
+                cv::rectangle(frame, lt, br, colors[i], 2);
+            }
+
+
+            // std::string lbl = cv::format("ID:%d_C:%s_CONF:%.2f", (int)box.trackID, classNames[i], box.conf);
+            std::string lbl = classNames[i] + ' ' + std::to_string(box.confidence).substr(0, 4);
+            cv::Size textSize = cv::getTextSize(lbl, cv::FONT_HERSHEY_DUPLEX, 1, 2, 0);
+            cv::Rect textBox(lt.x, lt.y - 40, textSize.width + 10, textSize.height + 20);
+            cv::rectangle(frame, textBox, colors[i], cv::FILLED);
+            cv::putText(frame, lbl, lt, cv::FONT_HERSHEY_DUPLEX, 1, cv::Scalar(0, 0, 0), 2, 0);
+        }
+        // This is only for preview purposes
+        float scale = 0.8;
+        cv::resize(frame, frame, cv::Size(frame.cols*scale, frame.rows*scale));
+        cv::imshow("Inference", frame);
+
+
+        if (cv::waitKey(1) == 'q') {
+            return;
+        }
     }
 
 private:
