@@ -181,7 +181,7 @@ public:
             cv::resize(frame, frame, cv::Size(frame.cols*scale, frame.rows*scale));
             cv::imshow("Inference", frame);
 
-            if (cv::waitKey(1) && 0xFF == 'q'){
+            if (cv::waitKey(1) == 'q'){
                 break;
             }
         }
