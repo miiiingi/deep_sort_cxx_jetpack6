@@ -49,7 +49,7 @@ DeepSort를 사용하지 않은 경우
 
 <div align=center>
   <video width="640" height="360" controls>
-    <source src="https://github.com/miiiingi/deep_sort_cxx_jetpack6/tree/dev/5/result/NotUsingDS.mp4" type="video/mp4">
+    <source src="https://github.com/miiiingi/deep_sort_cxx_jetpack6/blob/dev/5/result/NotusingDS.mp4" type="video/mp4">
   </video>
 </div>
 
@@ -57,6 +57,6 @@ DeepSort를 사용한 경우
 
 <div align=center>
   <video width="640" height="360" controls>
-    <source src="https://github.com/miiiingi/deep_sort_cxx_jetpack6/tree/dev/5/result/usingDS.mp4" type="video/mp4">
+    <source src="https://github.com/miiiingi/deep_sort_cxx_jetpack6/blob/dev/5/result/usingDS.mp4" type="video/mp4">
   </video>
 </div>
