@@ -6,11 +6,21 @@
 #include "yolo.h"
 #include "logging.h"
 #include <ctime>
+#include <csignal>
 
 using std::vector;
 
 static Logger gLogger;
 static Logger gLogger2;
+
+// 전역 변수로 자원을 관리
+bool interrupted = false;
+
+// 시그널 핸들러 함수
+void signalHandler(int signum) {
+    std::cout << "Interrupt signal (" << signum << ") received.\n";
+    interrupted = true;
+}
 
 class Tester {
 public:
@@ -90,6 +100,10 @@ public:
         vector<cv::Scalar> colors;
         vector<std::string> classNames;
         while (cap.read(frame)) {
+            if (interrupted) {
+                break;
+            }
+            
             inBoxes.clear();
             outBoxes.clear();
             colors.clear();
@@ -163,6 +177,9 @@ public:
         cv::Mat frame;
         int frameIndex = 1;
         while (cap.read(frame)) {
+            if (interrupted) {
+                break;
+            }
             std::vector<Detection> output = yolo->runYolo(frame);
 
             int detections = output.size();
@@ -197,6 +214,8 @@ public:
                 break;
             }
         }
+        cap.release();
+        cv::destroyAllWindows();
     }
 
     void showDetection(cv::Mat& img, std::vector<DetectBox>& boxes, std::vector<cv::Scalar>& colors, std::vector<std::string>& classNames) {
@@ -225,8 +244,9 @@ public:
 
 
         if (cv::waitKey(1) == 'q') {
-            return;
+            interrupted = true;
         }
+
     }
 
 private:
@@ -238,14 +258,15 @@ private:
 };
 
 int main(int argc, char** argv) {
+    signal(SIGINT, signalHandler);
     if (argc < 5) {
         std::cout << "./demo [input model path] [input txt path] [input video path] [yolo model path]" << std::endl;
         return -1;
     }
     Tester* test = new Tester(argv[1], argv[4]);
     test->loadDetections(argv[2]);
-    // test->run(argv[3]);
-    test->runInf(argv[3]);
+    test->run(argv[3]);
+    // test->runInf(argv[3]);
     delete test;
     return 0;
 }
