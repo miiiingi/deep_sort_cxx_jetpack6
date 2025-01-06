@@ -48,7 +48,7 @@ bash ../run.sh
 DeepSort를 사용하지 않은 경우  
 
 <div align=center>
-  <a href="s">
+  <a href="NDS">
     <img align="center" src="https://github.com/user-attachments/assets/19dd97fc-28fe-4d54-aabb-a11cc15ec3af"/>
   </a>
 </div>  
@@ -56,7 +56,7 @@ DeepSort를 사용하지 않은 경우
 DeepSort를 사용한 경우  
 
 <div align=center>
-  <a href="s">
+  <a href="DS">
     <img align="center" src="https://github.com/user-attachments/assets/2641e53b-ff16-44b9-8cf0-6a041c4f2b9a"/>
   </a>
 </div>  
