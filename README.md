@@ -26,6 +26,7 @@ deep_sort_pytorch 레포지토리에서 exportOnnx.py을 실행하여 deepsort.o
 mkdir build
 cd build
 bash ../build.sh
+bash ../convert.sh
 ```
 객체 탐지 모델의 사용을 위해 ultralytics 라이브러리를 사용합니다. 먼저 아래의 명령어를 통해 ultralytics 라이브러리를 다운로드 받습니다.
 ```
@@ -41,3 +42,21 @@ yolo export model=yolov8s.pt imgsz=1080,1920 format=onnx
 ```
 bash ../run.sh
 ```
+
+## 초기 결과 기록
+
+DeepSort를 사용하지 않은 경우  
+
+<div align=center>
+  <a href="s">
+    <img align="center" src="https://github.com/user-attachments/assets/19dd97fc-28fe-4d54-aabb-a11cc15ec3af"/>
+  </a>
+</div>  
+
+DeepSort를 사용한 경우  
+
+<div align=center>
+  <a href="s">
+    <img align="center" src="https://github.com/user-attachments/assets/2641e53b-ff16-44b9-8cf0-6a041c4f2b9a"/>
+  </a>
+</div>  
