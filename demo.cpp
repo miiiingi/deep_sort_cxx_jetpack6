@@ -7,6 +7,7 @@
 #include "logging.h"
 #include <ctime>
 #include <csignal>
+#include <cstring>
 
 using std::vector;
 
@@ -15,6 +16,7 @@ static Logger gLogger2;
 
 // 전역 변수로 자원을 관리
 bool interrupted = false;
+float scale = 0.8;
 
 // 시그널 핸들러 함수
 void signalHandler(int signum) {
@@ -56,8 +58,9 @@ public:
     }
 
     void run(std::string videoPath) {
-        std::cout << "Running DeepSort on " << videoPath << "\n";
+        std::cout << "run Called " << videoPath << "\n";
         cv::VideoCapture cap(videoPath); // Open the video file
+        cv::VideoWriter videoWriter("usingDS.mp4", cv::VideoWriter::fourcc('X', '2', '6', '4'), 30, cv::Size(1920 * scale, 1080 * scale));
         if (!cap.isOpened()) {
             std::cerr << "Error opening video file" << std::endl;
             return;
@@ -118,16 +121,19 @@ public:
                 DetectBox outBox(x1, y1, x2, y2, conf, cls, trackId);
                 outBoxes.push_back(outBox);
             }
-            showDetection(frame, outBoxes, colors, classNames);
+            showDetection(frame, outBoxes, colors, classNames, videoWriter);
             frameIndex++;
         }
+        videoWriter.release();
         cap.release();
         cv::destroyAllWindows();
     }
 
     void runInf(std::string videoPath) {
-        std::cout << "Running DeepSort on " << videoPath << "\n";
+        std::cout << "runInf Called " << videoPath << "\n";
         cv::VideoCapture cap(videoPath); // Open the video file
+        cv::VideoWriter videoWriter("NotusingDS.mp4", cv::VideoWriter::fourcc('X', '2', '6', '4'), 30, cv::Size(1920 * scale, 1080 * scale));
+
         if (!cap.isOpened()) {
             std::cerr << "Error opening video file" << std::endl;
             return;
@@ -167,19 +173,20 @@ public:
             // Inference ends here...
 
             // This is only for preview purposes
-            float scale = 0.8;
             cv::resize(frame, frame, cv::Size(frame.cols*scale, frame.rows*scale));
             cv::imshow("Inference", frame);
+            videoWriter.write(frame);
 
             if (cv::waitKey(1) == 'q'){
                 break;
             }
         }
         cap.release();
+        videoWriter.release();
         cv::destroyAllWindows();
     }
 
-    void showDetection(cv::Mat& img, std::vector<DetectBox>& boxes, std::vector<cv::Scalar>& colors, std::vector<std::string>& classNames) {
+    void showDetection(cv::Mat& img, std::vector<DetectBox>& boxes, std::vector<cv::Scalar>& colors, std::vector<std::string>& classNames, cv::VideoWriter& videoWriter) {
         cv::Mat frame = img.clone();
         for (int i = 0; i < boxes.size(); i++) {
             // cout << "box: " << box.x1 << " " << box.y1 << " " << box.x2 << " " << box.y2 << " " << box.confidence << " " << box.classID << "\n";
@@ -200,6 +207,7 @@ public:
         float scale = 0.8;
         cv::resize(frame, frame, cv::Size(frame.cols*scale, frame.rows*scale));
         cv::imshow("Inference", frame);
+        videoWriter.write(frame);
 
 
         if (cv::waitKey(1) == 'q') {
@@ -217,13 +225,18 @@ private:
 
 int main(int argc, char** argv) {
     signal(SIGINT, signalHandler);
-    if (argc < 4) {
-        std::cout << "./demo [input model path] [input video path] [yolo model path]" << std::endl;
+    if (argc < 5) {
+        std::cout << "./demo [input model path] [input video path] [yolo model path] [DS or Not DS]" << std::endl;
         return -1;
     }
     Tester* test = new Tester(argv[1], argv[3]);
-    test->run(argv[2]);
-    // test->runInf(argv[3]);
+    std::cout << "argv[4]: " << argv[4]<< "\n";
+    if (strcmp(argv[4], "DS") == 0) {
+        test->run(argv[2]);
+    } else      
+    {
+        test->runInf(argv[2]);
+    }
     delete test;
     return 0;
 }
