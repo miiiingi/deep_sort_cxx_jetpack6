@@ -1,0 +1,1 @@
+./onnx2engine ../resources/deepsort.onnx ../resources/deepsort.engine
