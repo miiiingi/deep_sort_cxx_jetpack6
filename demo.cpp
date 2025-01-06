@@ -3,17 +3,19 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include "deepsort.h"
+#include "yolo.h"
 #include "logging.h"
 #include <ctime>
 
 using std::vector;
 
 static Logger gLogger;
+static Logger gLogger2;
 
 void showDetection(cv::Mat& img, std::vector<DetectBox>& boxes) {
     cv::Mat temp = img.clone();
     for (auto box : boxes) {
-        cout << "box: " << box.x1 << " " << box.y1 << " " << box.x2 << " " << box.y2 << " " << box.confidence << " " << box.classID << "\n";
+        // cout << "box: " << box.x1 << " " << box.y1 << " " << box.x2 << " " << box.y2 << " " << box.confidence << " " << box.classID << "\n";
         cv::Point lt(box.x1, box.y1);
         cv::Point br(box.x2, box.y2);
         if (lt.x >= 0 && lt.y >= 0 && br.x <= img.cols && br.y <= img.rows) {
@@ -30,14 +32,17 @@ void showDetection(cv::Mat& img, std::vector<DetectBox>& boxes) {
 
 class Tester {
 public:
-    Tester(std::string modelPath) {
+    Tester(std::string modelPath, std::string yoloPath) {
         allDetections.clear();
         out.clear();
         DS = new DeepSort(modelPath, 128, 256, 0, &gLogger);
         std::cout << "DeepSort initialized!" << "\n";
+        yolo = new Yolo(yoloPath, cv::Size(1088, 1920), "classes.txt", true);
+        std::cout << "Yolo initialized!" << "\n";
     }
     ~Tester() {
         delete DS;
+        delete yolo;
         std::cout << "DeepSort released!" << "\n";
     }
 
@@ -133,21 +138,68 @@ public:
         cv::destroyAllWindows();
     }
 
+    void runInf() {
+        std::vector<std::string> imageNames;
+        imageNames.push_back("../resources/bus.jpg");
+        imageNames.push_back("../resources/zidane.jpg");
+        for (int i = 0; i < imageNames.size(); ++i)
+        {
+            cv::Mat frame = cv::imread(imageNames[i]);
+
+            // Inference starts here...
+            std::vector<Detection> output = yolo->runYolo(frame);
+
+            int detections = output.size();
+            std::cout << "Number of detections:" << detections << std::endl;
+
+            for (int i = 0; i < detections; ++i)
+            {
+                Detection detection = output[i];
+
+                cv::Rect box = detection.box;
+                cv::Scalar color = detection.color;
+
+                // Detection box
+                cv::rectangle(frame, box, color, 2);
+
+                // Detection box text
+                std::string classString = detection.className + ' ' + std::to_string(detection.confidence).substr(0, 4);
+                cv::Size textSize = cv::getTextSize(classString, cv::FONT_HERSHEY_DUPLEX, 1, 2, 0);
+                cv::Rect textBox(box.x, box.y - 40, textSize.width + 10, textSize.height + 20);
+
+                cv::rectangle(frame, textBox, color, cv::FILLED);
+                cv::putText(frame, classString, cv::Point(box.x + 5, box.y - 10), cv::FONT_HERSHEY_DUPLEX, 1, cv::Scalar(0, 0, 0), 2, 0);
+            }
+            // Inference ends here...
+
+            // This is only for preview purposes
+            float scale = 0.8;
+            cv::resize(frame, frame, cv::Size(frame.cols*scale, frame.rows*scale));
+            cv::imshow("Inference", frame);
+
+            cv::waitKey(-1);
+        }
+        
+
+    }
+
 private:
     vector<vector<DetectBox>> allDetections;
     vector<DetectBox> out;
     std::string txtPath;
     DeepSort* DS;
+    Yolo* yolo;
 };
 
 int main(int argc, char** argv) {
-    if (argc < 4) {
-        std::cout << "./demo [input model path] [input txt path] [input video path]" << std::endl;
+    if (argc < 5) {
+        std::cout << "./demo [input model path] [input txt path] [input video path] [yolo model path]" << std::endl;
         return -1;
     }
-    Tester* test = new Tester(argv[1]);
+    Tester* test = new Tester(argv[1], argv[4]);
     test->loadDetections(argv[2]);
-    test->run(argv[3]);
+    // test->run(argv[3]);
+    test->runInf();
     delete test;
     return 0;
 }
