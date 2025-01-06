@@ -1,5 +1,5 @@
-# DeepSort_TensorRT
-deepsort 객체 추적 알고리즘을 TensorRT를 통해서 가속화하는 코드입니다.
+# DeepSort_C++
+deepsort 객체 추적 알고리즘을 C++언어로 실행시키는 코드입니다. 
 ```
 https://github.com/RichardoMrMu/deepsort-tensorrt.git
 ```
