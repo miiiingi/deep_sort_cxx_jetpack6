@@ -148,7 +148,6 @@ public:
             std::vector<Detection> output = yolo->runYolo(frame);
 
             int detections = output.size();
-            std::cout << "Number of detections:" << detections << std::endl;
 
             for (int i = 0; i < detections; ++i)
             {
@@ -187,7 +186,6 @@ public:
     void showDetection(cv::Mat& img, std::vector<DetectBox>& boxes, std::vector<cv::Scalar>& colors, std::vector<std::string>& classNames, cv::VideoWriter& videoWriter) {
         cv::Mat frame = img.clone();
         for (int i = 0; i < boxes.size(); i++) {
-            // cout << "box: " << box.x1 << " " << box.y1 << " " << box.x2 << " " << box.y2 << " " << box.confidence << " " << box.classID << "\n";
             DetectBox box = boxes[i];
             cv::Point lt(box.x1, box.y1);
             cv::Point br(box.x2, box.y2);
@@ -218,7 +216,6 @@ private:
     int convertHW(int num) {
         int Q = num / 32;
         int R = num % 32;
-        std::cout << "Q: " << Q << " R: " << R << "\n";
         if (R == 0)
         {
             return Q * 32;
