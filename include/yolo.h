@@ -11,6 +11,16 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn.hpp>
+/**
+ * @brief Detection 구조체
+ * 
+ * @param class_id int 클래스 ID
+ * @param className std::string 클래스 이름
+ * @param confidence float 탐지 신뢰도 (기본값: 0)
+ * @param color cv::Scalar 표시 색상
+ * @param box cv::Rect 바운딩 박스
+ */
+
 
 struct Detection
 {
