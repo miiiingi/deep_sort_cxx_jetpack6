@@ -8,6 +8,7 @@
 #include <ctime>
 #include <csignal>
 #include <cstring>
+#include <string>
 
 using std::vector;
 
@@ -16,7 +17,6 @@ static Logger gLogger2;
 
 // 전역 변수로 자원을 관리
 bool interrupted = false;
-float scale = 0.8;
 
 // 시그널 핸들러 함수
 void signalHandler(int signum) {
@@ -26,11 +26,17 @@ void signalHandler(int signum) {
 
 class Tester {
 public:
-    Tester(std::string modelPath, std::string yoloPath) {
+    Tester(std::string modelPath, std::string yoloPath, std::string width, std::string height) {
         out.clear();
         DS = new DeepSort(modelPath, 128, 256, 0, &gLogger);
         std::cout << "DeepSort initialized!" << "\n";
-        yolo = new Yolo(yoloPath, cv::Size(1920, 1088), "classes.txt", true);
+        int oWidth = std::stoi(width);
+        int oHeight = std::stoi(height);
+        this->width = oWidth;
+        this->height = oHeight;
+        int mWidth = convertHW(oWidth);
+        int mHeight = convertHW(oHeight);
+        yolo = new Yolo(yoloPath, cv::Size(mWidth, mHeight), "classes.txt", true);
         std::cout << "Yolo initialized!" << "\n";
     }
     ~Tester() {
@@ -59,8 +65,13 @@ public:
 
     void run(std::string videoPath) {
         std::cout << "run Called " << videoPath << "\n";
+        // 마지막 '/' 또는 '\'의 위치 찾기
+        size_t last_slash_pos = videoPath.find_last_of("/\\");
+        
+        // 마지막 슬래시 이후의 문자열 추출
+        std::string filename = videoPath.substr(last_slash_pos + 1);
         cv::VideoCapture cap(videoPath); // Open the video file
-        cv::VideoWriter videoWriter("usingDS.mp4", cv::VideoWriter::fourcc('X', '2', '6', '4'), 30, cv::Size(1920 * scale, 1080 * scale));
+        cv::VideoWriter videoWriter(filename, cv::VideoWriter::fourcc('X', '2', '6', '4'), 30, cv::Size(width * scale, height * scale));
         if (!cap.isOpened()) {
             std::cerr << "Error opening video file" << std::endl;
             return;
@@ -118,7 +129,7 @@ public:
     void runInf(std::string videoPath) {
         std::cout << "runInf Called " << videoPath << "\n";
         cv::VideoCapture cap(videoPath); // Open the video file
-        cv::VideoWriter videoWriter("NotusingDS.mp4", cv::VideoWriter::fourcc('X', '2', '6', '4'), 30, cv::Size(1920 * scale, 1080 * scale));
+        cv::VideoWriter videoWriter("NotusingDS.mp4", cv::VideoWriter::fourcc('X', '2', '6', '4'), 30, cv::Size(width * scale, height * scale));
 
         if (!cap.isOpened()) {
             std::cerr << "Error opening video file" << std::endl;
@@ -203,19 +214,34 @@ public:
     }
 
 private:
+    int convertHW(int num) {
+        int Q = num / 32;
+        int R = num % 32;
+        std::cout << "Q: " << Q << " R: " << R << "\n";
+        if (R == 0)
+        {
+            return Q * 32;
+        } else
+        {
+            return 32 - (num - (32 * Q)) + num;
+        }
+    }
+
+    int width;
+    int height;
+    float scale = 0.8;
     vector<DetectBox> out;
-    std::string txtPath;
     DeepSort* DS;
     Yolo* yolo;
 };
 
 int main(int argc, char** argv) {
     signal(SIGINT, signalHandler);
-    if (argc < 5) {
-        std::cout << "./demo [input model path] [input video path] [yolo model path] [DS or Not DS]" << std::endl;
+    if (argc < 7) {
+        std::cout << "./demo [input model path] [input video path] [yolo model path] [DS or Not DS] [model width] [model height]" << std::endl;
         return -1;
     }
-    Tester* test = new Tester(argv[1], argv[3]);
+    Tester* test = new Tester(argv[1], argv[3], argv[5], argv[6]);
     if (strcmp(argv[4], "DS") == 0) {
         test->run(argv[2]);
     } else      
