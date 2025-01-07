@@ -71,7 +71,8 @@ public:
         // 마지막 슬래시 이후의 문자열 추출
         std::string filename = videoPath.substr(last_slash_pos + 1);
         cv::VideoCapture cap(videoPath); // Open the video file
-        cv::VideoWriter videoWriter(filename, cv::VideoWriter::fourcc('X', '2', '6', '4'), 30, cv::Size(width * scale, height * scale));
+        double fps = cap.get(cv::CAP_PROP_FPS);
+        cv::VideoWriter videoWriter(filename, cv::VideoWriter::fourcc('X', '2', '6', '4'), fps, cv::Size(width * scale, height * scale));
         if (!cap.isOpened()) {
             std::cerr << "Error opening video file" << std::endl;
             return;
