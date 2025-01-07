@@ -107,21 +107,7 @@ public:
                 inBoxes.push_back(inBox);
             }
             DS->sort(frame, inBoxes);
-            std::cout << "result size: " << DS->result.size() << "\n";
-            std::cout << "results: " << DS->results.size() << "\n";
-            for (int i = 0; i < DS->result.size(); i++)
-            {
-                int x1 = DS->result[i].second(0,0);
-                int y1 = DS->result[i].second(0,1);
-                int x2 = DS->result[i].second(0,2);
-                int y2 = DS->result[i].second(0,3);
-                int trackId = DS->result[i].first;
-                int cls = DS->results[i].first.cls;
-                float conf = DS->results[i].first.conf;
-                DetectBox outBox(x1, y1, x2, y2, conf, cls, trackId);
-                outBoxes.push_back(outBox);
-            }
-            showDetection(frame, outBoxes, colors, classNames, videoWriter);
+            showDetection(frame, inBoxes, colors, classNames, videoWriter);
             frameIndex++;
         }
         videoWriter.release();
@@ -197,7 +183,7 @@ public:
                 cv::rectangle(frame, lt, br, colors[i], 2);
             }
 
-            std::string lbl = classNames[i] + ' ' + std::to_string(box.confidence).substr(0, 4);
+            std::string lbl = classNames[i] + ' ' + "c: " + std::to_string(box.confidence).substr(0, 4) + ' ' + "t: " + std::to_string(box.trackID).substr(0, 4);
             cv::Size textSize = cv::getTextSize(lbl, cv::FONT_HERSHEY_DUPLEX, 1, 2, 0);
             cv::Rect textBox(lt.x, lt.y - 40, textSize.width + 10, textSize.height + 20);
             cv::rectangle(frame, textBox, colors[i], cv::FILLED);
@@ -230,7 +216,6 @@ int main(int argc, char** argv) {
         return -1;
     }
     Tester* test = new Tester(argv[1], argv[3]);
-    std::cout << "argv[4]: " << argv[4]<< "\n";
     if (strcmp(argv[4], "DS") == 0) {
         test->run(argv[2]);
     } else      
