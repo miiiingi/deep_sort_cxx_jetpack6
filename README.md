@@ -10,7 +10,7 @@ https://github.com/RichardoMrMu/deepsort-tensorrt.git
   <a href="s">
     <img align="center" src="https://github.com/user-attachments/assets/ba7e45e6-09d5-48d7-a56f-af2c53c40984"/>
   </a>
-</div>  
+</div>
 
 ## Build & Run
 아래의 레포지토리를 클론합니다. 첫 번째 레포지토리는 deepsort를 pytorch로 구현한 레포지토리입니다.  
@@ -26,6 +26,8 @@ deep_sort_pytorch 레포지토리에서 exportOnnx.py을 실행하여 deepsort.o
 mkdir build
 cd build
 bash ../build.sh
+
+// onnx file to engine file
 bash ../convert.sh
 ```
 객체 탐지 모델의 사용을 위해 ultralytics 라이브러리를 사용합니다. 먼저 아래의 명령어를 통해 ultralytics 라이브러리를 다운로드 받습니다.
@@ -36,27 +38,20 @@ pip install ultralytics
 ```
 yolo export model=yolov8s.pt imgsz=1080,1920 format=onnx
 ```
-생성된 yolov8s.onnx 파일을 resources 폴더에 옮깁니다.
-아래의 bash shell을 통해서 demo를 실행시킵니다.
+생성된 yolov8s.onnx 파일을 resources 폴더에 옮깁니다.  
+아래의 bash shell을 통해서 demo를 실행시킵니다.  
+
 
 ```
-bash ../run.sh
+// DS: using Deep Sort, Other Wise: Not using Deep Sort
+bash ../run.sh DS
 ```
 
-## 초기 결과 기록
+## 결과 기록
+### 도로 영상(Yolov8s + Deep Sort)  
 
-DeepSort를 사용하지 않은 경우  
-
-<div align=center>
-  <video width="640" height="360" controls>
-    <source src="https://github.com/miiiingi/deep_sort_cxx_jetpack6/blob/dev/5/result/NotusingDS.mp4" type="video/mp4">
-  </video>
-</div>
-
-DeepSort를 사용한 경우  
-
-<div align=center>
-  <video width="640" height="360" controls>
-    <source src="https://github.com/miiiingi/deep_sort_cxx_jetpack6/blob/dev/5/result/usingDS.mp4" type="video/mp4">
-  </video>
-</div>
+<p align="center">
+  <a href="https://youtu.be/0WvlJ1I7FHo">
+    <img src="https://img.youtube.com/vi/0WvlJ1I7FHo/0.jpg" alt="Object Tracking Algorithm Inference">
+  </a>
+</p>
