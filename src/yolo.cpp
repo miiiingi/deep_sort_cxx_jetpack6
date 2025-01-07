@@ -139,20 +139,25 @@ std::vector<Detection> Yolo::runYolo(const cv::Mat &input)
         int idx = nms_result[i];
 
         Detection result;
-        result.class_id = class_ids[idx];
-        result.confidence = confidences[idx];
+        int class_id = class_ids[idx];
+        if (class_id == 1 || class_id == 2 || class_id == 3 || class_id == 5 || class_id == 6 || class_id == 7)
+        {
+            // 1: Bicycle, 2: Car, 3: Motorcycle, 5: Bus, 6: Train, 7: Truck
+            result.class_id = class_id;
+            result.confidence = confidences[idx];
 
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<int> dis(100, 255);
-        result.color = cv::Scalar(dis(gen),
-                                  dis(gen),
-                                  dis(gen));
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_int_distribution<int> dis(100, 255);
+            result.color = cv::Scalar(dis(gen),
+                                    dis(gen),
+                                    dis(gen));
 
-        result.className = classes[result.class_id];
-        result.box = boxes[idx];
+            result.className = classes[result.class_id];
+            result.box = boxes[idx];
 
-        detections.push_back(result);
+            detections.push_back(result);
+        }
     }
 
     return detections;
